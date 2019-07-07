@@ -1,0 +1,16 @@
+FROM xenial_qt
+LABEL maintainer="Jorge Rodriguez <veimox@gmail.org> (@veimox)"
+
+ARG QTC_VERSION="v4.8.2"
+
+ENV QTC_PATH $BASE_PATH/qt-creator
+ENV QTC_BUILD_PATH $BASE_PATH/qt-creator-build
+ENV QTC_REPO "https://github.com/qt-creator/qt-creator"
+
+# Create folders
+RUN mkdir -p $QTC_PATH/
+RUN mkdir -p $QTC_BUILD_PATH/
+
+# Download & unpack Qt Intaller Framework & clean
+RUN git clone $QTC_REPO -b $QTC_VERSION $QTC_PATH && cd $QTC_PATH && git submodule update --init \
+    cd $QTC_BUILD_PATH && qmake ../qt-creator/qtcreator.pro -r && make -j8 || exit 1 && make deployqt || exit 1
