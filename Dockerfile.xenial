@@ -1,16 +1,80 @@
-FROM xenial_qt
+FROM veimox/xenial-for-qtc-with-ros:xenial
 LABEL maintainer="Jorge Rodriguez <veimox@gmail.org> (@veimox)"
 
-ARG QTC_VERSION="v4.8.2"
+#################
+## Environment ##
+#################
 
-ENV QTC_PATH $BASE_PATH/qt-creator
-ENV QTC_BUILD_PATH $BASE_PATH/qt-creator-build
-ENV QTC_REPO "https://github.com/qt-creator/qt-creator"
+ARG QTC_VERSION="v4.8.0-rc1"
 
+ENV QTC_PATH=$BASE_PATH/qt-creator
+ENV QTC_BUILD_PATH=$BASE_PATH/qt-creator-build
+ENV QTC_REPO="https://github.com/qt-creator/qt-creator"
+
+ENV LLVM_INSTALL_DIR=$BASE_PATH/libclang
+ENV CLANG_FILENAME=libclang-release_60-linux-Rhel7.2-gcc5.3-x86_64-clazy.7z
+
+ENV QTC_ENABLE_CLANG_LIBTOOLING=true
+ENV BUILD_CPLUSPLUS_TOOLS=true
+
+ENV INSTALL_DIR="output"
+ENV BASE_PACKAGE_NAME="org.rosindustrial.qtros"
+ENV PACKAGE_NAME="latest"
+
+ENV YAML_CPP_TAG="yaml-cpp-0.6.2"
+ENV YAML_CCP_URL="https://github.com/jbeder/yaml-cpp.git"
+
+ENV QTERMWIDGET_BRANCH="debian/xenial"
+ENV QTERMWIDGET_URL="https://github.com/Levi-Armstrong/qtermwidget.git"
+
+################
+## Qt Creator ##
+################
 # Create folders
 RUN mkdir -p $QTC_PATH/
 RUN mkdir -p $QTC_BUILD_PATH/
 
+# Download & unpack Clang
+RUN cd $BASE_PATH && wget https://download.qt.io/development_releases/prebuilt/libclang/$CLANG_FILENAME \
+    && 7zr x -bd $CLANG_FILENAME
+
 # Download & unpack Qt Intaller Framework & clean
 RUN git clone $QTC_REPO -b $QTC_VERSION $QTC_PATH && cd $QTC_PATH && git submodule update --init \
-    cd $QTC_BUILD_PATH && qmake ../qt-creator/qtcreator.pro -r && make -j8 || exit 1 && make deployqt || exit 1
+    cd $QTC_BUILD_PATH && qmake ../qt-creator/qtcreator.pro -r && make -j8 && make deployqt
+
+# Pack it
+RUN cd $BASE_PATH \
+    && 7zr a -r qtcreator.7z $INSTALL_DIR \
+    && mv qtcreator.7z $BASE_PATH/INSTALL_DIR/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/data
+
+#################
+## QTermWidget ##
+#################
+
+# Clone the qtermwidget
+RUN cd $BASE_PATH \
+    && git clone --depth 1 --single-branch --branch $QTERMWIDGET_BRANCH $QTERMWIDGET_URL \
+    && mkdir qtermwidget-build \
+    && cd $BASE_PATH/qtermwidget-build \
+    && cmake -DCMAKE_CXX_FLAGS=-std=c++11 ../qtermwidget/ \
+    && make -j8 \
+    && make install
+
+# Transfer qtermwedget file to correct location
+RUN mv $BASE_PATH/qtermwidget-build/libqtermwidget5.so* $BASE_PATH/$INSTALL_DIR/lib/qtcreator
+# Next change the rpath to use local Qt Libraries copied into the Qt Creator Directory
+RUN chrpath -r \$\ORIGIN/../Qt/lib $BASE_PATH/$INSTALL_DIR/lib/qtcreator/libqtermwidget5.so
+
+##############
+## Yaml CPP ##
+##############
+RUN cd $BASE_PATH \
+    && git clone --depth 1 --single-branch --branch $YAML_CPP_TAG $YAML_CCP_URL \
+    && mkdir yaml-cpp-build \
+    && cd $BASE_PATH/yaml-cpp-build \
+    && cmake -DBUILD_SHARED_LIBS=ON ../yaml-cpp/ \
+    && make -j8 \
+    && make install
+
+# Transfer yaml-cpp file to correct location
+RUN mv $BASE_PATH/yaml-cpp-build/libyaml-cpp.so* $BASE_PATH/$INSTALL_DIR/lib/qtcreator
