@@ -7,17 +7,20 @@ LABEL maintainer="Jorge Rodriguez <veimox@gmail.org> (@veimox)"
 
 ARG QTC_VERSION="v4.8.0-rc1"
 
-ENV QTC_PATH=$BASE_PATH/qt-creator
-ENV QTC_BUILD_PATH=$BASE_PATH/qt-creator-build
+ENV QTC_PATH="$BASE_PATH/qt-creator"
+ENV QTC_BUILD_PATH="$BASE_PATH/qt-creator-build"
 ENV QTC_REPO="https://github.com/qt-creator/qt-creator"
 
-ENV LLVM_INSTALL_DIR=$BASE_PATH/libclang
-ENV CLANG_FILENAME=libclang-release_60-linux-Rhel7.2-gcc5.3-x86_64-clazy.7z
+ENV LLVM_INSTALL_DIR="$BASE_PATH/libclang"
+ENV CLANG_FILENAME="libclang-release_60-linux-Rhel7.2-gcc5.3-x86_64-clazy.7z"
 
-ENV QTC_ENABLE_CLANG_LIBTOOLING=true
+ENV QTC_ENABLE_CLANG_LIBTOOLING=false
 ENV BUILD_CPLUSPLUS_TOOLS=true
 
 ENV INSTALL_DIR="output"
+ENV INSTALL_PATH="$BASE_PATH/$INSTALL_DIR"
+RUN mkdir -p $INSTALL_PATH
+
 ENV BASE_PACKAGE_NAME="org.rosindustrial.qtros"
 ENV PACKAGE_NAME="latest"
 
@@ -43,9 +46,10 @@ RUN git clone $QTC_REPO -b $QTC_VERSION $QTC_PATH && cd $QTC_PATH && git submodu
     cd $QTC_BUILD_PATH && qmake ../qt-creator/qtcreator.pro -r && make -j8 && make deployqt
 
 # Pack it
+RUN mkdir -p $INSTALL_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/data
 RUN cd $BASE_PATH \
     && 7zr a -r qtcreator.7z $INSTALL_DIR \
-    && mv qtcreator.7z $BASE_PATH/INSTALL_DIR/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/data
+    && mv qtcreator.7z $INSTALL_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/data
 
 #################
 ## QTermWidget ##
@@ -61,7 +65,8 @@ RUN cd $BASE_PATH \
     && make install
 
 # Transfer qtermwedget file to correct location
-RUN mv $BASE_PATH/qtermwidget-build/libqtermwidget5.so* $BASE_PATH/$INSTALL_DIR/lib/qtcreator
+RUN mkdir -p $INSTALL_PATH/lib/qtcreator
+RUN mv $BASE_PATH/qtermwidget-build/libqtermwidget5.so* $INSTALL_PATH/lib/qtcreator
 # Next change the rpath to use local Qt Libraries copied into the Qt Creator Directory
 RUN chrpath -r \$\ORIGIN/../Qt/lib $BASE_PATH/$INSTALL_DIR/lib/qtcreator/libqtermwidget5.so
 
