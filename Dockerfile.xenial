@@ -14,7 +14,7 @@ ENV QTC_REPO="https://github.com/qt-creator/qt-creator"
 ENV LLVM_INSTALL_DIR="$BASE_PATH/libclang"
 ENV CLANG_FILENAME="libclang-release_60-linux-Rhel7.2-gcc5.3-x86_64-clazy.7z"
 
-ENV QTC_ENABLE_CLANG_LIBTOOLING=false
+# ENV QTC_ENABLE_CLANG_LIBTOOLING=true
 ENV BUILD_CPLUSPLUS_TOOLS=true
 
 ENV INSTALL_DIR="output"
