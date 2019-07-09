@@ -48,7 +48,7 @@ RUN git clone $QTC_REPO -b $QTC_VERSION $QTC_PATH \
     && git submodule update --init \
     && cd $QTC_BUILD_PATH \
     && qmake $QTC_PATH/qtcreator.pro -r \
-    && make -j8 \
+    && make -j$(nproc) \
     && make deployqt
 
 # Pack it
@@ -67,7 +67,7 @@ RUN cd $BASE_PATH \
     && mkdir qtermwidget-build \
     && cd $BASE_PATH/qtermwidget-build \
     && cmake -DCMAKE_CXX_FLAGS=-std=c++11 ../qtermwidget/ \
-    && make -j8 \
+    && make -j$(nproc) \
     && make install
 
 # Transfer qtermwedget file to correct location
@@ -84,7 +84,7 @@ RUN cd $BASE_PATH \
     && mkdir yaml-cpp-build \
     && cd $BASE_PATH/yaml-cpp-build \
     && cmake -DBUILD_SHARED_LIBS=ON ../yaml-cpp/ \
-    && make -j8 \
+    && make -j$(nproc) \
     && make install
 
 # Transfer yaml-cpp file to correct location
