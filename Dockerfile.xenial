@@ -38,12 +38,18 @@ RUN mkdir -p $QTC_PATH/
 RUN mkdir -p $QTC_BUILD_PATH/
 
 # Download & unpack Clang
-RUN cd $BASE_PATH && wget https://download.qt.io/development_releases/prebuilt/libclang/$CLANG_FILENAME \
+RUN cd $BASE_PATH \
+    && wget https://download.qt.io/development_releases/prebuilt/libclang/$CLANG_FILENAME \
     && 7zr x -bd $CLANG_FILENAME
 
 # Download & unpack Qt Intaller Framework & clean
-RUN git clone $QTC_REPO -b $QTC_VERSION $QTC_PATH && cd $QTC_PATH && git submodule update --init \
-    cd $QTC_BUILD_PATH && qmake $QTC_PATH/qtcreator.pro -r && make -j8 && make deployqt
+RUN git clone $QTC_REPO -b $QTC_VERSION $QTC_PATH \
+    && cd $QTC_PATH \
+    && git submodule update --init \
+    && cd $QTC_BUILD_PATH \
+    && qmake $QTC_PATH/qtcreator.pro -r \
+    && make -j8 \
+    && make deployqt
 
 # Pack it
 RUN mkdir -p $INSTALL_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/data
