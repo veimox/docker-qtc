@@ -1,15 +1,15 @@
-FROM veimox/xenial-for-qtc-with-ros:xenial
+FROM veimox/qt:xenial-5.12.4
 LABEL maintainer="Jorge Rodriguez <veimox@gmail.org> (@veimox)"
 
 #################
 ## Environment ##
 #################
 
-ARG QTC_VERSION="v4.8.0-rc1"
+ARG QTC_VERSION="v4.9.2"
 
 ENV QTC_PATH="$BASE_PATH/qt-creator"
 ENV QTC_BUILD_PATH="$BASE_PATH/qt-creator-build"
-ENV QTC_REPO="https://github.com/qt-creator/qt-creator"
+ENV QTC_REPO="https://code.qt.io/qt-creator/qt-creator.git"
 
 ENV LLVM_INSTALL_DIR="$BASE_PATH/libclang"
 ENV CLANG_FILENAME="libclang-release_80-based-linux-Ubuntu16.04-gcc5.3-x86_64.7z"
@@ -42,10 +42,8 @@ RUN cd $BASE_PATH \
     && wget https://download.qt.io/development_releases/prebuilt/libclang/$CLANG_FILENAME \
     && 7zr x -bd $CLANG_FILENAME
 
-# Download & unpack Qt Intaller Framework & clean
-RUN git clone $QTC_REPO -b $QTC_VERSION $QTC_PATH \
-    && cd $QTC_PATH \
-    && git submodule update --init \
+# Download & make QtCreator
+RUN git clone --recursive $QTC_REPO -b $QTC_VERSION $QTC_PATH \
     && cd $QTC_BUILD_PATH \
     && qmake $QTC_PATH/qtcreator.pro -r \
     && make -j$(nproc) \
