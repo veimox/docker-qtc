@@ -30,7 +30,7 @@ ENV YAML_CCP_URL="https://github.com/jbeder/yaml-cpp.git"
 ENV QTERMWIDGET_BRANCH="debian/xenial"
 ENV QTERMWIDGET_URL="https://github.com/Levi-Armstrong/qtermwidget.git"
 
-ENV INSTALL_ROOT=$BASE_PATH/$INSTALL_DIR
+ENV INSTALL_ROOT="$BASE_PATH/$INSTALL_DIR"
 
 ################
 ## Qt Creator ##
