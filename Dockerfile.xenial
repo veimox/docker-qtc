@@ -17,8 +17,8 @@ ENV CLANG_FILENAME="libclang-release_80-based-linux-Ubuntu16.04-gcc5.3-x86_64.7z
 # ENV QTC_ENABLE_CLANG_LIBTOOLING=true
 ENV BUILD_CPLUSPLUS_TOOLS=true
 
-ENV INSTALL_DIR="output"
-ENV INSTALL_ROOT="$BASE_PATH/$INSTALL_DIR"
+ENV QTC_INSTALL_DIR="qtc_install"
+ENV INSTALL_ROOT="$BASE_PATH/$QTC_INSTALL_DIR"
 RUN mkdir -p $INSTALL_ROOT
 
 ENV YAML_CPP_TAG="yaml-cpp-0.6.2"
@@ -48,7 +48,7 @@ RUN git clone --recursive $QTC_REPO -b $QTC_VERSION $QTC_PATH \
 
 # Pack it
 RUN cd $BASE_PATH \
-    && 7zr a -r qtcreator.7z $INSTALL_DIR
+    && 7zr a -r qtcreator.7z $QTC_INSTALL_DIR
 
 #################
 ## QTermWidget ##
@@ -66,7 +66,7 @@ RUN cd $BASE_PATH \
 # Next change the rpath to use local Qt Libraries copied into the Qt Creator Directory
 RUN mkdir -p $INSTALL_ROOT/lib/qtcreator \
     && mv $BASE_PATH/qtermwidget-build/libqtermwidget5.so* $INSTALL_ROOT/lib/qtcreator \
-    && chrpath -r \$\ORIGIN/../Qt/lib $BASE_PATH/$INSTALL_DIR/lib/qtcreator/libqtermwidget5.so
+    && chrpath -r \$\ORIGIN/../Qt/lib $BASE_PATH/$QTC_INSTALL_DIR/lib/qtcreator/libqtermwidget5.so
 
 ##############
 ## Yaml CPP ##
@@ -80,4 +80,4 @@ RUN cd $BASE_PATH \
 
 # Transfer yaml-cpp file to correct location
 RUN mkdir -p $INSTALL_ROOT/lib/qtcreator \
-    && mv $BASE_PATH/yaml-cpp-build/libyaml-cpp.so* $BASE_PATH/$INSTALL_DIR/lib/qtcreator
+    && mv $BASE_PATH/yaml-cpp-build/libyaml-cpp.so* $BASE_PATH/$QTC_INSTALL_DIR/lib/qtcreator
