@@ -21,9 +21,6 @@ ENV INSTALL_DIR="output"
 ENV INSTALL_PATH="$BASE_PATH/$INSTALL_DIR"
 RUN mkdir -p $INSTALL_PATH
 
-ENV BASE_PACKAGE_NAME="org.rosindustrial.qtros"
-ENV PACKAGE_NAME="latest"
-
 ENV YAML_CPP_TAG="yaml-cpp-0.6.2"
 ENV YAML_CCP_URL="https://github.com/jbeder/yaml-cpp.git"
 
@@ -52,10 +49,8 @@ RUN git clone --recursive $QTC_REPO -b $QTC_VERSION $QTC_PATH \
     && make deployqt
 
 # Pack it
-RUN mkdir -p $INSTALL_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/data
 RUN cd $BASE_PATH \
-    && 7zr a -r qtcreator.7z $INSTALL_DIR \
-    && mv qtcreator.7z $INSTALL_PATH/packages/$BASE_PACKAGE_NAME.$PACKAGE_NAME/data
+    && 7zr a -r qtcreator.7z $INSTALL_DIR
 
 #################
 ## QTermWidget ##
@@ -67,14 +62,13 @@ RUN cd $BASE_PATH \
     && mkdir qtermwidget-build \
     && cd $BASE_PATH/qtermwidget-build \
     && cmake -DCMAKE_CXX_FLAGS=-std=c++11 ../qtermwidget/ \
-    && make -j$(nproc) \
-    && make install
+    && make -j$(nproc)
 
 # Transfer qtermwedget file to correct location
-RUN mkdir -p $INSTALL_PATH/lib/qtcreator
-RUN mv $BASE_PATH/qtermwidget-build/libqtermwidget5.so* $INSTALL_PATH/lib/qtcreator
 # Next change the rpath to use local Qt Libraries copied into the Qt Creator Directory
-RUN chrpath -r \$\ORIGIN/../Qt/lib $BASE_PATH/$INSTALL_DIR/lib/qtcreator/libqtermwidget5.so
+RUN mkdir -p $INSTALL_PATH/lib/qtcreator \
+    && mv $BASE_PATH/qtermwidget-build/libqtermwidget5.so* $INSTALL_PATH/lib/qtcreator \
+    && chrpath -r \$\ORIGIN/../Qt/lib $BASE_PATH/$INSTALL_DIR/lib/qtcreator/libqtermwidget5.so
 
 ##############
 ## Yaml CPP ##
@@ -84,8 +78,8 @@ RUN cd $BASE_PATH \
     && mkdir yaml-cpp-build \
     && cd $BASE_PATH/yaml-cpp-build \
     && cmake -DBUILD_SHARED_LIBS=ON ../yaml-cpp/ \
-    && make -j$(nproc) \
-    && make install
+    && make -j$(nproc)
 
 # Transfer yaml-cpp file to correct location
-RUN mv $BASE_PATH/yaml-cpp-build/libyaml-cpp.so* $BASE_PATH/$INSTALL_DIR/lib/qtcreator
+RUN mkdir -p $INSTALL_PATH/lib/qtcreator \
+    && mv $BASE_PATH/yaml-cpp-build/libyaml-cpp.so* $BASE_PATH/$INSTALL_DIR/lib/qtcreator
