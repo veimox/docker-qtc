@@ -18,8 +18,8 @@ ENV CLANG_FILENAME="libclang-release_80-based-linux-Ubuntu16.04-gcc5.3-x86_64.7z
 # ENV QTC_ENABLE_CLANG_LIBTOOLING=true
 ENV BUILD_CPLUSPLUS_TOOLS=true
 
-ENV QTC_INSTALL_DIR="qtc_install"
-ENV QTC_INSTALL_PATH="$BASE_PATH/$QTC_INSTALL_DIR"
+ENV INSTALL_DIR="latest"
+ENV QTC_INSTALL_PATH="$BASE_PATH/$INSTALL_DIR"
 # INSTALL_ROOT is mandatory because is used internally by qmake
 ENV INSTALL_ROOT="$QTC_INSTALL_PATH" 
 
@@ -50,7 +50,8 @@ RUN git clone --recursive $QTC_REPO -b $QTC_VERSION $QTC_PATH \
     && make deployqt
 
 # Pack it
-RUN 7zr a -r $BASE_PATH/qtcreator.7z $QTC_INSTALL_PATH
+RUN cd $BASE_PATH \
+    && 7zr a -r qtcreator.7z $INSTALL_DIR
 
 #################
 ## QTermWidget ##
