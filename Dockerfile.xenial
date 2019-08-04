@@ -61,7 +61,8 @@ RUN cd $BASE_PATH \
     && mkdir qtermwidget-build \
     && cd $BASE_PATH/qtermwidget-build \
     && cmake -DCMAKE_CXX_FLAGS=-std=c++11 ../qtermwidget/ \
-    && make -j$(nproc)
+    && make -j$(nproc) \
+    && make install
 
 # Transfer qtermwedget file to correct location
 # Next change the rpath to use local Qt Libraries copied into the Qt Creator Directory
@@ -77,7 +78,8 @@ RUN cd $BASE_PATH \
     && mkdir yaml-cpp-build \
     && cd $BASE_PATH/yaml-cpp-build \
     && cmake -DBUILD_SHARED_LIBS=ON ../yaml-cpp/ \
-    && make -j$(nproc)
+    && make -j$(nproc) \
+    && make install
 
 # Transfer yaml-cpp file to correct location
 RUN mkdir -p $INSTALL_ROOT/lib/qtcreator \
