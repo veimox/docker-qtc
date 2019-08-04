@@ -18,16 +18,14 @@ ENV CLANG_FILENAME="libclang-release_80-based-linux-Ubuntu16.04-gcc5.3-x86_64.7z
 ENV BUILD_CPLUSPLUS_TOOLS=true
 
 ENV INSTALL_DIR="output"
-ENV INSTALL_PATH="$BASE_PATH/$INSTALL_DIR"
-RUN mkdir -p $INSTALL_PATH
+ENV INSTALL_ROOT="$BASE_PATH/$INSTALL_DIR"
+RUN mkdir -p $INSTALL_ROOT
 
 ENV YAML_CPP_TAG="yaml-cpp-0.6.2"
 ENV YAML_CCP_URL="https://github.com/jbeder/yaml-cpp.git"
 
 ENV QTERMWIDGET_BRANCH="debian/xenial"
 ENV QTERMWIDGET_URL="https://github.com/Levi-Armstrong/qtermwidget.git"
-
-ENV INSTALL_ROOT="$BASE_PATH/$INSTALL_DIR"
 
 ################
 ## Qt Creator ##
@@ -66,8 +64,8 @@ RUN cd $BASE_PATH \
 
 # Transfer qtermwedget file to correct location
 # Next change the rpath to use local Qt Libraries copied into the Qt Creator Directory
-RUN mkdir -p $INSTALL_PATH/lib/qtcreator \
-    && mv $BASE_PATH/qtermwidget-build/libqtermwidget5.so* $INSTALL_PATH/lib/qtcreator \
+RUN mkdir -p $INSTALL_ROOT/lib/qtcreator \
+    && mv $BASE_PATH/qtermwidget-build/libqtermwidget5.so* $INSTALL_ROOT/lib/qtcreator \
     && chrpath -r \$\ORIGIN/../Qt/lib $BASE_PATH/$INSTALL_DIR/lib/qtcreator/libqtermwidget5.so
 
 ##############
@@ -81,5 +79,5 @@ RUN cd $BASE_PATH \
     && make -j$(nproc)
 
 # Transfer yaml-cpp file to correct location
-RUN mkdir -p $INSTALL_PATH/lib/qtcreator \
+RUN mkdir -p $INSTALL_ROOT/lib/qtcreator \
     && mv $BASE_PATH/yaml-cpp-build/libyaml-cpp.so* $BASE_PATH/$INSTALL_DIR/lib/qtcreator
