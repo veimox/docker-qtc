@@ -13,7 +13,7 @@ ENV QTC_BUILD_PATH="$BASE_PATH/qt-creator-build"
 ENV QTC_REPO="https://code.qt.io/qt-creator/qt-creator.git"
 
 ENV LLVM_INSTALL_DIR="$BASE_PATH/libclang"
-ENV CLANG_FILENAME="libclang-release_80-based-linux-Ubuntu16.04-gcc5.3-x86_64.7z"
+ENV CLANG_FILENAME="libclang-release_70-based-linux-Rhel7.2-gcc5.3-x86_64.7z"
 
 ENV QTC_ENABLE_CLANG_LIBTOOLING=true
 ENV BUILD_CPLUSPLUS_TOOLS=true
