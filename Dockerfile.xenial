@@ -15,7 +15,7 @@ ENV QTC_REPO="https://code.qt.io/qt-creator/qt-creator.git"
 ENV LLVM_INSTALL_DIR="$BASE_PATH/libclang"
 ENV CLANG_FILENAME="libclang-release_80-based-linux-Ubuntu16.04-gcc5.3-x86_64.7z"
 
-# ENV QTC_ENABLE_CLANG_LIBTOOLING=true
+ENV QTC_ENABLE_CLANG_LIBTOOLING=true
 ENV BUILD_CPLUSPLUS_TOOLS=true
 
 ENV INSTALL_DIR="latest"
@@ -46,7 +46,7 @@ RUN cd $BASE_PATH \
 RUN git clone --recursive $QTC_REPO -b $QTC_VERSION $QTC_PATH \
     && cd $QTC_BUILD_PATH \
     && qmake $QTC_PATH/qtcreator.pro -r \
-    && make -j$(nproc) \
+    && make -j$(nproc) CC=$LLVM_INSTALL_DIR/bin/clang CXX=$LLVM_INSTALL_DIR/bin/clang++ \
     && make deployqt
 
 # Pack it
@@ -63,7 +63,7 @@ RUN cd $BASE_PATH \
     && mkdir qtermwidget-build \
     && cd $BASE_PATH/qtermwidget-build \
     && cmake -DCMAKE_CXX_FLAGS=-std=c++11 ../qtermwidget/ \
-    && make -j$(nproc) \
+    && make -j$(nproc) CC=$LLVM_INSTALL_DIR/bin/clang CXX=$LLVM_INSTALL_DIR/bin/clang++ \
     && make install
 
 # Transfer qtermwedget file to correct location
@@ -80,7 +80,7 @@ RUN cd $BASE_PATH \
     && mkdir yaml-cpp-build \
     && cd $BASE_PATH/yaml-cpp-build \
     && cmake -DBUILD_SHARED_LIBS=ON ../yaml-cpp/ \
-    && make -j$(nproc) \
+    && make -j$(nproc) CC=$LLVM_INSTALL_DIR/bin/clang CXX=$LLVM_INSTALL_DIR/bin/clang++ \
     && make install
 
 # Transfer yaml-cpp file to correct location
