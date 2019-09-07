@@ -5,7 +5,7 @@ LABEL maintainer="Jorge Rodriguez <veimox@gmail.org> (@veimox)"
 ## Environment ##
 #################
 
-ARG QTC_VERSION="v4.9.2"
+ARG QTC_VERSION="v4.10.0"
 ENV QTC_VERSION="$QTC_VERSION"
 
 ENV QTC_PATH="$BASE_PATH/qt-creator"
