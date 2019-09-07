@@ -15,6 +15,9 @@ jobs:
     - uses: actions/checkout@v1
     - name: Login
       run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     - name: Build xenial
       run: docker build . --file Dockerfile.xenial --tag veimox/qtc:xenial-$(git describe --tags --abbrev=0)
     - name: Deploy xenial
