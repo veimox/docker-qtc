@@ -1,0 +1,88 @@
+FROM veimox/qt:bionic-5.12.4
+LABEL maintainer="Jorge Rodriguez <veimox@gmail.org> (@veimox)"
+
+#################
+## Environment ##
+#################
+
+ARG QTC_VERSION="v4.9.2"
+ENV QTC_VERSION="$QTC_VERSION"
+
+ENV QTC_PATH="$BASE_PATH/qt-creator"
+ENV QTC_BUILD_PATH="$BASE_PATH/qt-creator-build"
+ENV QTC_REPO="https://code.qt.io/qt-creator/qt-creator.git"
+
+ENV LLVM_INSTALL_DIR="$BASE_PATH/libclang"
+ENV CLANG_FILENAME="libclang-release_70-based-linux-Rhel7.2-gcc5.3-x86_64.7z"
+
+ENV QTC_ENABLE_CLANG_LIBTOOLING=true
+ENV BUILD_CPLUSPLUS_TOOLS=true
+
+ENV INSTALL_DIR="latest"
+ENV QTC_INSTALL_PATH="$BASE_PATH/$INSTALL_DIR"
+# INSTALL_ROOT is mandatory because is used internally by qmake
+ENV INSTALL_ROOT="$QTC_INSTALL_PATH" 
+
+ENV YAML_CPP_TAG="yaml-cpp-0.6.2"
+ENV YAML_CCP_URL="https://github.com/jbeder/yaml-cpp.git"
+
+ENV QTERMWIDGET_BRANCH="debian/xenial"
+ENV QTERMWIDGET_URL="https://github.com/Levi-Armstrong/qtermwidget.git"
+
+################
+## Qt Creator ##
+################
+# Create folders
+RUN mkdir -p $QTC_PATH/
+RUN mkdir -p $QTC_BUILD_PATH/
+RUN mkdir -p $QTC_INSTALL_PATH/
+
+# Download & unpack Clang
+RUN cd $BASE_PATH \
+    && wget https://download.qt.io/development_releases/prebuilt/libclang/$CLANG_FILENAME \
+    && 7zr x -bd $CLANG_FILENAME
+
+# Download & make QtCreator
+RUN git clone --recursive $QTC_REPO -b $QTC_VERSION $QTC_PATH \
+    && cd $QTC_BUILD_PATH \
+    && qmake $QTC_PATH/qtcreator.pro -r \
+    && make -j$(nproc) \
+    && make deployqt
+
+# Pack it
+RUN cd $BASE_PATH \
+    && 7zr a -r qtcreator.7z $INSTALL_DIR
+
+#################
+## QTermWidget ##
+#################
+
+# Clone the qtermwidget
+RUN cd $BASE_PATH \
+    && git clone --depth 1 --single-branch --branch $QTERMWIDGET_BRANCH $QTERMWIDGET_URL \
+    && mkdir qtermwidget-build \
+    && cd $BASE_PATH/qtermwidget-build \
+    && cmake -DCMAKE_CXX_FLAGS=-std=c++11 ../qtermwidget/ \
+    && make -j$(nproc) \
+    && make install
+
+# Transfer qtermwedget file to correct location
+# Next change the rpath to use local Qt Libraries copied into the Qt Creator Directory
+RUN mkdir -p $INSTALL_ROOT/lib/qtcreator \
+    && mv $BASE_PATH/qtermwidget-build/libqtermwidget5.so* $INSTALL_ROOT/lib/qtcreator \
+    && chrpath -r \$\ORIGIN/../Qt/lib $QTC_INSTALL_PATH/lib/qtcreator/libqtermwidget5.so
+
+##############
+## Yaml CPP ##
+##############
+RUN cd $BASE_PATH \
+    && git clone --depth 1 --single-branch --branch $YAML_CPP_TAG $YAML_CCP_URL \
+    && mkdir yaml-cpp-build \
+    && cd $BASE_PATH/yaml-cpp-build \
+    && cmake -DBUILD_SHARED_LIBS=ON ../yaml-cpp/ \
+    && make -j$(nproc) \
+    && make install
+
+# Transfer yaml-cpp file to correct location
+RUN mkdir -p $INSTALL_ROOT/lib/qtcreator \
+    && mv $BASE_PATH/yaml-cpp-build/libyaml-cpp.so* $QTC_INSTALL_PATH/lib/qtcreator
