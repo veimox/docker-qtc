@@ -1,0 +1,25 @@
+name: Build and Deploy
+
+on:
+  - push:
+      tags: 
+        - '*'
+
+jobs:
+
+  build:
+ 
+    runs-on: ubuntu-latest
+ 
+    steps:
+    - uses: actions/checkout@v1
+    - name: Login
+      run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - name: Build xenial
+      run: docker build . --file Dockerfile.xenial --tag veimox/qtc:xenial-$(git describe --tags --abbrev=0)
+    - name: Deploy xenial
+      run: docker push veimox/qtc:xenial-$(git describe --tags --abbrev=0)
+    - name: Build bionic
+      run: docker build . --file Dockerfile.bionic --tag veimox/qtc:bionic-$(git describe --tags --abbrev=0)
+    - name: Deploy bionic
+      run: docker push veimox/qtc:bionic-$(git describe --tags --abbrev=0)
